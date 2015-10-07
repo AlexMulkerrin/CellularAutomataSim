@@ -27,7 +27,7 @@ Simulation.prototype.setCells = function () {
     //Todo add image loading
     for (var i = 0; i < this.width; i++) {
         for (var j = 0; j < this.height; j++) {
-            this.cell[i][j].state = random(5);
+            this.cell[i][j].state = random(6);
         }
     }
 }

@@ -23,3 +23,25 @@ function toRGBString(red, green, blue) {
     colourString += blue.toString(16);
     return colourString;
 }
+
+function selectCellColour(cell) {
+    if (cell.state === stateType.splitter) {
+        if (cell.isCharged) {
+            return cellColour[18];
+        } else {
+            return cellColour[17];
+        }
+    } else if (cell.isInverter) {
+        if (cell.isCharged) {
+            return cellColour[cell.state + 12];
+        } else {
+            return cellColour[cell.state + 8];
+        }
+    } else {
+        if (cell.isCharged) {
+            return cellColour[cell.state + 4];
+        } else {
+            return cellColour[cell.state];
+        }
+    }
+}

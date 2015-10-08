@@ -12,9 +12,14 @@ function Display(canvasName, simulation) {
     this.sqSize = 16;
 
     this.canvas = document.getElementById(canvasName);
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+    this.canvas.width = simulation.width* this.sqSize;
+    this.canvas.height = simulation.height * this.sqSize;
     this.ctx = this.canvas.getContext("2d");
+}
+
+Display.prototype.resizeCanvas = function () {
+    this.canvas.width = this.targetSim.width * this.sqSize;
+    this.canvas.height = this.targetSim.height * this.sqSize;
 }
 
 Display.prototype.update = function () {
@@ -38,7 +43,7 @@ Display.prototype.drawCALattice = function () {
 
 Display.prototype.drawCell = function (i, j) {
     var cell = this.targetSim.cell;
-    this.ctx.fillStyle = this.selectCellColour(cell[i][j]);
+    this.ctx.fillStyle = selectCellColour(cell[i][j]);
     var x = i * this.sqSize;
     var y = j * this.sqSize;
 
@@ -102,26 +107,4 @@ Display.prototype.drawCell = function (i, j) {
 
 Display.prototype.drawRect = function(x,y,w,h) {
     this.ctx.fillRect(x,y,w,h);
-}
-
-Display.prototype.selectCellColour = function(cell) {
-    if (cell.state === stateType.splitter) {
-        if (cell.isCharged) {
-            return cellColour[18];
-        } else {
-            return cellColour[17];
-        }
-    } else if (cell.isInverter) {
-        if (cell.isCharged) {
-            return cellColour[cell.state+12];
-        } else {
-            return cellColour[cell.state+8];
-        }
-    } else {
-        if (cell.isCharged) {
-            return cellColour[cell.state+4];
-        } else {
-            return cellColour[cell.state];
-        }
-    }
 }

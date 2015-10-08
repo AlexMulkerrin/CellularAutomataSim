@@ -7,7 +7,7 @@ function Simulation(w, h) {
     this.cell = [];
 
     this.createCALattice();
-    this.setCells();
+    //this.randomiseCALattice();
 }
 
 Simulation.prototype.createCALattice = function () {
@@ -26,7 +26,7 @@ function Cell() {
     this.isInverter = false;
 }
 
-Simulation.prototype.setCells = function () {
+Simulation.prototype.randomiseCALattice = function () {
     //Todo add image loading
     for (var i = 0; i < this.width; i++) {
         for (var j = 0; j < this.height; j++) {
@@ -35,6 +35,70 @@ Simulation.prototype.setCells = function () {
             this.cell[i][j].isInverter = randomBool();
         }
     }
+}
+
+Simulation.prototype.getSchematicAsImage =  function() {
+    var tempCanvas = document.createElement('canvas');
+    tempCanvas.width = this.width;
+    tempCanvas.height = this.height;
+    var ctx = tempCanvas.getContext("2d");
+
+    for (var i = 0; i < this.width; i++) {
+        for (var j = 0; j < this.height; j++) {
+            ctx.fillStyle = selectCellColour(this.cell[i][j]);
+            ctx.fillRect(i, j, 1, 1);
+        }
+    }
+    return tempCanvas;
+    
+}
+
+Simulation.prototype.setCALatticeFromImage = function (image) {
+    var index, r, g, b;
+    var colourString;
+
+    var tempCanvas = document.createElement('canvas');
+    tempCanvas.width = image.width;
+    tempCanvas.height = image.height;
+    var ctx = tempCanvas.getContext("2d");
+    ctx.drawImage(image, 0, 0);
+    var imageData = ctx.getImageData(0, 0, image.width, image.height);
+
+    this.width = image.width;
+    this.height = image.height;
+    this.createCALattice();
+
+    for (var i = 0; i < this.width; i++) {
+        for (var j = 0; j < this.height; j++) {
+            index = (i + j * this.width) * 4;
+            r = imageData.data[index];
+            g = imageData.data[index+1];
+            b = imageData.data[index + 2];
+            colourString = toRGBString(r, g, b);
+            for (var e = 0; e < cellColour.length; e++) {
+                if (colourString === cellColour[e]) {
+                    this.cell[i][j].state = e;
+                    if (this.cell[i][j].state > 4) {
+                        this.cell[i][j].state = (e - 1) % 4 + 1;
+                        if (e > 16) {
+                            this.cell[i][j].state = 5;
+                            if (e === 18) {
+                                this.cell[i][j].isCharged = true;
+                            }
+                        } else if (e > 12) {
+                            this.cell[i][j].isCharged = true;
+                            this.cell[i][j].isInverter = true;
+                        } else if (e > 8) {
+                            this.cell[i][j].isInverter = true;
+                        } else {
+                            this.cell[i][j].isCharged = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 Simulation.prototype.update = function () {
@@ -85,3 +149,5 @@ Simulation.prototype.setNextCharge = function (x, y, sourceState) {
         }
     }
 }
+
+

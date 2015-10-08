@@ -101,6 +101,11 @@ Simulation.prototype.setCALatticeFromImage = function (image) {
 
 }
 
+Simulation.prototype.setCell= function(x,y) {
+    //this.cell[x][y].isCharged = true;
+    this.cell[x][y].isInverter = !(this.cell[x][y].isInverter);
+}
+
 Simulation.prototype.update = function () {
     for (var i = 0; i < this.width; i++) {
         for (var j = 0; j < this.height; j++) {

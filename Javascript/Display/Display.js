@@ -7,8 +7,9 @@
 	"#aa00aa", "#ff00ff"                        // splitter
 ];
 
-function Display(canvasName, simulation) {
+function Display(canvasName, simulation, control) {
     this.targetSim = simulation;
+    this.targetControl = control;
     this.sqSize = 16;
 
     this.canvas = document.getElementById(canvasName);
@@ -20,18 +21,23 @@ function Display(canvasName, simulation) {
 Display.prototype.resizeCanvas = function () {
     this.canvas.width = this.targetSim.width * this.sqSize;
     this.canvas.height = this.targetSim.height * this.sqSize;
+    this.update();
 }
 
 Display.prototype.update = function () {
     this.ctx.fillStyle = "#ffffff";
     this.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
     this.drawCALattice();
+   // this.drawControl();
 }
 
 Display.prototype.drawCALattice = function () {
     for (var i = 0; i < this.targetSim.width; i++) {
         for (var j = 0; j < this.targetSim.height; j++) {
             this.ctx.fillStyle = "#eeeeee";
+            if (i === this.targetControl.hoverX || j === this.targetControl.hoverY) {
+                this.ctx.fillStyle = "#eef5ff";
+            }
             this.drawRect(i * this.sqSize, j * this.sqSize, this.sqSize - 1, this.sqSize - 1);
 
             if (this.targetSim.cell[i][j].state !== 0) {
@@ -107,4 +113,13 @@ Display.prototype.drawCell = function (i, j) {
 
 Display.prototype.drawRect = function(x,y,w,h) {
     this.ctx.fillRect(x,y,w,h);
+}
+
+Display.prototype.drawControl = function () {
+    if (this.targetControl.mouse.isOverCanvas) {
+        this.ctx.fillStyle = "#00ffff";
+        var x = this.targetControl.mouse.x;
+        var y = this.targetControl.mouse.y;
+        this.ctx.fillRect(x - 5, y - 5, 10, 10);
+    }
 }

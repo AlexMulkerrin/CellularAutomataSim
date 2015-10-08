@@ -12,7 +12,9 @@ function loadProgram() {
 function Program(canvasName) {
     this.refreshDelay = 500;
     this.simulation = new Simulation(10, 10);
-    this.display = new Display(canvasName, this.simulation);
+    this.control = new Control(canvasName, this.simulation);
+    this.display = new Display(canvasName, this.simulation, this.control);
+    this.control.linkDisplay(this.display);
 
     var image = new Image();
     image.src = "exampleSchematics/logicGates.png";

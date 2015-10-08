@@ -1,4 +1,13 @@
-﻿function Display(canvasName, simulation) {
+﻿const cellColour = [
+    "#ffffff", 	                                // empty
+	"#0000cc", "#1111dd", "#2222ee", "#3333ff",	// wire
+	"#00cc00", "#11dd11", "#22ee22", "#33ff33",	// wire with signal
+	"#cc0000", "#dd1111", "#ee2222", "#ff3333",	// inverter
+	"#cccc00", "#dddd11", "#eeee22", "#ffff33",	// inverter with signal
+	"#aa00aa", "#ff00ff"                        // splitter
+];
+
+function Display(canvasName, simulation) {
     this.targetSim = simulation;
     this.sqSize = 16;
 
@@ -29,7 +38,7 @@ Display.prototype.drawCALattice = function () {
 
 Display.prototype.drawCell = function (i, j) {
     var cell = this.targetSim.cell;
-    this.ctx.fillStyle = "#0000ff";
+    this.ctx.fillStyle = this.selectCellColour(cell[i][j]);
     var x = i * this.sqSize;
     var y = j * this.sqSize;
 
@@ -93,4 +102,26 @@ Display.prototype.drawCell = function (i, j) {
 
 Display.prototype.drawRect = function(x,y,w,h) {
     this.ctx.fillRect(x,y,w,h);
+}
+
+Display.prototype.selectCellColour = function(cell) {
+    if (cell.state === stateType.splitter) {
+        if (cell.isCharged) {
+            return cellColour[18];
+        } else {
+            return cellColour[17];
+        }
+    } else if (cell.isInverter) {
+        if (cell.isCharged) {
+            return cellColour[cell.state+12];
+        } else {
+            return cellColour[cell.state+8];
+        }
+    } else {
+        if (cell.isCharged) {
+            return cellColour[cell.state+4];
+        } else {
+            return cellColour[cell.state];
+        }
+    }
 }

@@ -101,9 +101,83 @@ Simulation.prototype.setCALatticeFromImage = function (image) {
 
 }
 
-Simulation.prototype.setCell= function(x,y) {
-    //this.cell[x][y].isCharged = true;
-    this.cell[x][y].isInverter = !(this.cell[x][y].isInverter);
+Simulation.prototype.setCell = function (x, y, type, orient) {
+    cell = this.cell[x][y];
+    switch (type) {
+        case toolType.charge:
+            cell.isCharged = (!cell.isCharged);
+            break;
+        case toolType.wire:
+            /*if (cell.state > 0 && cell.state < 5) {
+                cell.isInverter = false;
+                cell.state = stateType.splitter;
+            } else {*/
+                cell.state = orient;
+            //}
+            break;
+        case toolType.inverter:
+            if (cell.state > 0 && cell.state < 5) {
+                cell.isInverter = (!cell.isInverter);
+            }
+            break;
+        case toolType.splitter:
+            cell.state = stateType.splitter;
+            break;
+        case toolType.rotate:
+            cell.state = cell.state+1;
+            if (cell.state > 4) cell.state = 1;
+            break;
+
+    }
+}
+
+Simulation.prototype.setLine = function (x, y, oldX, oldY, type, orient) {
+    var left, right, top, bottom;
+    var orientX, orientY;
+    if (x < oldX) {
+        left = x;
+        right = oldX;
+        orientX = stateType.left;
+    } else {
+        left = oldX;
+        right = x;
+        orientX = stateType.right;
+    }
+    if (y < oldY) {
+        top = y;
+        bottom = oldY;
+        orientY = stateType.up;
+    } else {
+        top = oldY;
+        bottom = y;
+        orientY = stateType.down;
+    }
+
+
+    for (var i = left; i <= right; i++) {
+        this.setCell(i, oldY, type, orientX);
+    }
+    if (top !== bottom) {
+        for (var j = top; j <= bottom; j++) {
+            this.setCell(x, j, type, orientY);
+
+        }
+    }
+}
+
+Simulation.prototype.clearArea = function (x, y, oldX, oldY) {
+    var left = Math.min(x, oldX);
+    var top = Math.min(y, oldY);
+    var right = Math.max(x, oldX);
+    var bottom = Math.max(y, oldY);
+
+    for (var i = left; i <= right; i++) {
+        for (var j = top; j <= bottom; j++) {
+            this.cell[i][j].state = 0;
+            this.cell[i][j].isCharged = 0;
+            this.cell[i][j].isInverter = 0;
+        }
+    }
 }
 
 Simulation.prototype.update = function () {

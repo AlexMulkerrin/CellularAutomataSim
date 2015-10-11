@@ -1,18 +1,60 @@
-﻿function Control(canvasName, simulation) {
+﻿const toolType = { charge: 0, wire: 1, inverter: 2, splitter: 3, rotate: 4 }
+const toolName = ["charge", "wire", "inverter", "splitter", "rotate"];
+const orientName = ["none","right", "down", "left", "up"];
+
+function Control(canvasName, simulation) {
     this.targetCanvas = document.getElementById(canvasName);
     this.targetSim = simulation;
     this.targetDisplay;
 
     this.mouse = new Mouse();
 
+	this.oldX = -1;
+	this.oldY = -1;
     this.hoverX = -1;
     this.hoverY = -1;
+    this.currentTool = toolType.wire;
+    this.currentOrient = stateType.right;
 
+    this.createKeyboardEventHandlers();
     this.createCanvasEventHandlers();
+    
 }
 
 Control.prototype.linkDisplay = function(display) {
     this.targetDisplay=display;
+}
+
+Control.prototype.createKeyboardEventHandlers = function () {
+    var t = this;
+    document.onkeydown = function (event) {
+        var keyCode;
+        if (event === null) {
+            keyCode = window.event.keyCode;
+        } else {
+            keyCode = event.keyCode;
+        }
+
+        switch (keyCode) {
+            case 49:    // 1 key
+                t.currentTool = toolType.charge;
+                break;
+            case 50:    // 2 key
+                t.currentTool = toolType.wire;
+                break;
+            case 51:    // 3 key
+                t.currentTool = toolType.inverter;
+                break;
+            case 52:    // 4 key
+                t.currentTool = toolType.splitter;
+                break;
+            case 53:    // 5 key
+                t.currentTool = toolType.rotate;
+                t.currentOrient++;
+                if (t.currentOrient > 4) t.currentOrient = 1;
+                break;
+        }
+    };
 }
 
 Control.prototype.createCanvasEventHandlers = function () {
@@ -38,13 +80,20 @@ Control.prototype.mouseUpdateCoords = function (event) {
 }
 
 Control.prototype.setHover = function () {
-    this.hoverX  = Math.floor(this.mouse.x / this.targetDisplay.sqSize);
+    this.hoverX = Math.floor(this.mouse.x / this.targetDisplay.sqSize);
     this.hoverY  = Math.floor(this.mouse.y / this.targetDisplay.sqSize);
+}
+
+Control.prototype.setOldHover = function () {
+    this.oldX  = Math.floor(this.mouse.x / this.targetDisplay.sqSize);
+    this.oldY  = Math.floor(this.mouse.y / this.targetDisplay.sqSize);
 }
 
 Control.prototype.mouseExits = function (event) {
     this.mouse.isOverCanvas = false;
-    this.mouseReleased();
+    this.mouse.isPressed = false;
+    this.oldX = -1;
+    this.oldY = -1;
     this.hoverX = -1;
     this.hoverY = -1;
     this.targetDisplay.update();
@@ -52,12 +101,29 @@ Control.prototype.mouseExits = function (event) {
 
 Control.prototype.mousePressed = function (event) {
     this.mouse.buttonPressed = event.which;
-    this.targetSim.setCell(this.hoverX, this.hoverY);
-    this.targetDisplay.update();
+    this.mouse.isPressed = true;
+	this.setOldHover();
+
+    
 }
 
 Control.prototype.mouseReleased = function (event) {
     this.mouse.isPressed = false;
+
+    if (this.oldX >= 0 && this.oldY >= 0) {
+        if (this.mouse.buttonPressed === 1) {
+            if (this.oldX === this.hoverX && this.oldY === this.hoverY) {
+                this.targetSim.setCell(this.hoverX, this.hoverY, this.currentTool, this.currentOrient);
+            } else {
+                this.targetSim.setLine(this.hoverX, this.hoverY, this.oldX, this.oldY, this.currentTool, this.currentOrient);
+            }
+        } else if (this.mouse.buttonPressed === 3) {
+            this.targetSim.clearArea(this.hoverX, this.hoverY, this.oldX, this.oldY);
+        }
+    }
+	this.oldX = -1;
+	this.oldY = -1;
+    this.targetDisplay.update();
 }
 
 

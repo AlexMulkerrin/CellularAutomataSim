@@ -27,19 +27,51 @@ Display.prototype.resizeCanvas = function () {
 Display.prototype.update = function () {
     this.ctx.fillStyle = "#ffffff";
     this.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-    this.drawCALattice();
-   // this.drawControl();
+    this.drawCAGrid();
+    this.drawCAContents();
+    //this.drawControl();
+    this.drawInfo();
 }
 
-Display.prototype.drawCALattice = function () {
+Display.prototype.drawCAGrid = function () {
     for (var i = 0; i < this.targetSim.width; i++) {
         for (var j = 0; j < this.targetSim.height; j++) {
-            this.ctx.fillStyle = "#eeeeee";
-            if (i === this.targetControl.hoverX || j === this.targetControl.hoverY) {
-                this.ctx.fillStyle = "#eef5ff";
-            }
+            this.ctx.fillStyle = this.chooseCAGridColour(i,j)
             this.drawRect(i * this.sqSize, j * this.sqSize, this.sqSize - 1, this.sqSize - 1);
+        }
+    }
+}
 
+Display.prototype.chooseCAGridColour = function (x, y) {
+    var result = "#eeeeee";
+    var left = Math.min(this.targetControl.hoverX, this.targetControl.oldX);
+    var top = Math.min(this.targetControl.hoverY, this.targetControl.oldY);
+    var right = Math.max(this.targetControl.hoverX, this.targetControl.oldX);
+    var bottom = Math.max(this.targetControl.hoverY, this.targetControl.oldY);
+
+    if (this.targetControl.mouse.isPressed) {
+        if (this.targetControl.mouse.buttonPressed === 1) {
+            if (x >= left && x <= right && y === this.targetControl.oldY) {
+                result = "#eef5ff";
+            }
+            if (x === this.targetControl.hoverX && y >= top && y <= bottom) {
+                result = "#eef5ff";
+            }
+
+            
+        } else if (this.targetControl.mouse.buttonPressed === 3) {
+            if (x >= left && x <= right && y >= top && y <= bottom) {
+                result = "#ffddee";
+            }
+        }
+
+    }
+    return result;
+}
+
+Display.prototype.drawCAContents = function () {
+    for (var i = 0; i < this.targetSim.width; i++) {
+        for (var j = 0; j < this.targetSim.height; j++) {     
             if (this.targetSim.cell[i][j].state !== 0) {
                 this.drawCell(i, j);
             }
@@ -117,9 +149,21 @@ Display.prototype.drawRect = function(x,y,w,h) {
 
 Display.prototype.drawControl = function () {
     if (this.targetControl.mouse.isOverCanvas) {
-        this.ctx.fillStyle = "#00ffff";
-        var x = this.targetControl.mouse.x;
-        var y = this.targetControl.mouse.y;
-        this.ctx.fillRect(x - 5, y - 5, 10, 10);
+        if (this.targetControl.mouse.isPressed) {
+            this.ctx.fillStyle = "#00ffff";
+            var x = this.targetControl.oldX;
+            var y = this.targetControl.oldY;
+            var w = this.targetControl.hoverX - x;
+            var h = this.targetControl.hoverY - y;
+            this.drawRect(x * this.sqSize, y * this.sqSize, (w * this.sqSize) - 1, this.sqSize - 1);
+            this.drawRect(x * this.sqSize + (w * this.sqSize), y * this.sqSize, this.sqSize - 1, (h * this.sqSize) - 1);
+        }
     }
+}
+
+Display.prototype.drawInfo = function () {
+    this.ctx.fillStyle = "#000000";
+    var text = "Current tool: " + toolName[this.targetControl.currentTool]
+                + ", " + orientName[this.targetControl.currentOrient];
+    this.ctx.fillText(text, 5, 12);
 }

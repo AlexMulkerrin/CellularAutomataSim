@@ -10,7 +10,7 @@ function loadProgram() {
 }
 // OBJECT CLASS
 function Program(canvasName) {
-    this.refreshDelay = 500;
+    this.refreshDelay = 50;
     this.simulation = new Simulation(10, 10);
     this.control = new Control(canvasName, this.simulation);
     this.display = new Display(canvasName, this.simulation, this.control);

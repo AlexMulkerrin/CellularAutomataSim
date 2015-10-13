@@ -12,6 +12,19 @@
 </head>
 <body onload="loadProgram()">
     <b>Cellular Automata Editor</b><br /><br />
+    Current tool:
+    <input name="tool" type="radio" id="chargeButton" value="0" />charge
+    <input name="tool" checked="" type="radio" id="wireButton" value="1" />wire
+    <input name="tool" type="radio" id="inverterButton" value="2" />inverter
+    <input name="tool" type="radio" id="splitterButton" value="3" />splitter
+    <input name="tool" type="radio" id="rotateButton" value="4" />rotate
+    <br /> 
+    Current orientation:
+    <input name="orient" checked="" id="rightButton" type="radio" value="1" />right
+    <input name="orient"  id="downButton" type="radio" value="2" />down
+    <input name="orient" id="leftButton" type="radio" value="3" />left
+    <input name="orient" id="upButton" type="radio" value="4" />up
+    <br /> 
 
     <canvas id="CAcanvas">
         HTML5 canvas goes here

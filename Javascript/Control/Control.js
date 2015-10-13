@@ -16,6 +16,7 @@ function Control(canvasName, simulation) {
     this.currentTool = toolType.wire;
     this.currentOrient = stateType.right;
 
+    this.createInterfaceEventHandlers();
     this.createKeyboardEventHandlers();
     this.createCanvasEventHandlers();
     
@@ -23,6 +24,38 @@ function Control(canvasName, simulation) {
 
 Control.prototype.linkDisplay = function(display) {
     this.targetDisplay=display;
+}
+
+Control.prototype.createInterfaceEventHandlers = function () {
+    var t = this;
+    document.getElementById("chargeButton").onclick = function () {
+        t.currentTool = toolType.charge;
+    };
+    document.getElementById("wireButton").onclick = function () {
+        t.currentTool = toolType.wire;
+    };
+    document.getElementById("inverterButton").onclick = function () {
+        t.currentTool = toolType.inverter;
+    };
+    document.getElementById("splitterButton").onclick = function () {
+        t.currentTool = toolType.splitter;
+    };
+    document.getElementById("rotateButton").onclick = function () {
+        t.currentTool = toolType.rotate;
+    };
+
+    document.getElementById("rightButton").onclick = function () {
+        t.currentOrient = 1;
+    };
+    document.getElementById("downButton").onclick = function () {
+        t.currentOrient = 2;
+    };
+    document.getElementById("leftButton").onclick = function () {
+        t.currentOrient = 3;
+    };
+    document.getElementById("upButton").onclick = function () {
+        t.currentOrient = 4;
+    };
 }
 
 Control.prototype.createKeyboardEventHandlers = function () {
@@ -50,8 +83,8 @@ Control.prototype.createKeyboardEventHandlers = function () {
                 break;
             case 53:    // 5 key
                 t.currentTool = toolType.rotate;
-                t.currentOrient++;
-                if (t.currentOrient > 4) t.currentOrient = 1;
+                //t.currentOrient++;
+                //if (t.currentOrient > 4) t.currentOrient = 1;
                 break;
         }
     };

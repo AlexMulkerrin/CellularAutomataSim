@@ -3,6 +3,7 @@
 <head>
     <title>Cellular Automata Sim</title>
 	<meta charset="utf-8" />
+    <link rel="shortcut icon" href="Resources/Icons/shortcut.svg" />
     <script type="text/javascript" src="Javascript/Program/Program.js"></script>
     <script type="text/javascript" src="Javascript/Program/Utility.js"></script>
     <script type="text/javascript" src="Javascript/Simulation/Simulation.js"></script>
@@ -11,7 +12,7 @@
 
 </head>
 <body onload="loadProgram()">
-    <b>Cellular Automata Editor</b><br /><br />
+    <!--<b>Cellular Automata Editor</b><br /><br />
     Current tool:
     <input name="tool" type="radio" id="chargeButton" value="0" />charge
     <input name="tool" checked="" type="radio" id="wireButton" value="1" />wire
@@ -24,13 +25,13 @@
     <input name="orient"  id="downButton" type="radio" value="2" />down
     <input name="orient" id="leftButton" type="radio" value="3" />left
     <input name="orient" id="upButton" type="radio" value="4" />up
-    <br /> 
+    <br />--> 
 
-    <canvas id="CAcanvas">
+    <canvas id="CAcanvas" style="position:absolute; top:0px; left:0px;">
         HTML5 canvas goes here
-    </canvas><br />
+    </canvas><!--<br />
     Load:
     <input type="file" id="imageToLoad" />
-    <button id="saveToFile">Save</button>
+    <button id="saveToFile">Save</button>-->
 </body>
 </html>

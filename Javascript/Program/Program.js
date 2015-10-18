@@ -12,9 +12,13 @@ function loadProgram() {
 function Program(canvasName) {
     this.refreshDelay = 50;
     this.simulation = new Simulation(10, 10);
-    this.control = new Control(canvasName, this.simulation);
+    var t = this;
+    this.control = new Control(canvasName, this.simulation, t);
     this.display = new Display(canvasName, this.simulation, this.control);
     this.control.linkDisplay(this.display);
+
+    
+
 
     var image = new Image();
     image.src = "exampleSchematics/logicGates.png";
@@ -25,13 +29,15 @@ function Program(canvasName) {
     }
 
 
-    document.getElementById("imageToLoad").onchange = function () {
-        prog.loadImage();
-    };
+    //document.getElementById("imageToLoad").onchange = function () {
+        //prog.loadImage();
+    //};
+    
 
-    document.getElementById("saveToFile").onclick = function () {
-        prog.saveImage();
-    };
+
+    //document.getElementById("saveToFile").onclick = function () {
+        //prog.saveImage();
+   // };
 }
 // METHODS
 Program.prototype.update = function () {
@@ -59,10 +65,22 @@ Program.prototype.createDownloadPrompt = function (name, contents) {
     link.click();
 };
 
-Program.prototype.loadImage = function () {
+Program.prototype.createOpenPrompt = function () {
+    var t = this;
+    var test = document.createElement('input');
+    test.setAttribute("type", "file");
+    document.body.appendChild(test);
+    test.onchange = function (event) {
+        t.loadImage(test);
+        document.body.removeChild(event.target);
+    };
+    test.click();
+}
+
+Program.prototype.loadImage = function (fileInput) {
     var prog = this;
     var image = new Image();
-    var file = document.getElementById("imageToLoad").files[0]; // todo use javascript instead of input element
+    var file = fileInput.files[0]; // todo use javascript instead of input element
     var fileReader = new FileReader();
     fileReader.onload = function (event) {
         image.src = event.target.result;

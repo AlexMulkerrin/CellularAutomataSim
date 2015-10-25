@@ -66,8 +66,14 @@ Control.prototype.createKeyboardEventHandlers = function () {
                 t.selectTool();
                 break;
 
+            case 32:    // spacebar
             case 80:    // p key
                 t.targetSim.togglePause();
+                break;
+
+            case 13:    // enter
+                t.targetSim.update();
+                t.targetDisplay.update();
                 break;
 
             case 65:
@@ -397,8 +403,6 @@ function View() {
     this.pixelPerCell = 16;
     this.cellPerPixel = 1;
 }
-
-
 
 Control.prototype.createButtons = function () {
     var c = this.targetCanvas;

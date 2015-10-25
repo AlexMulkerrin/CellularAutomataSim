@@ -9,7 +9,6 @@ function Simulation(w, h) {
     this.cell = [];
 
     this.createCALattice();
-    //this.randomiseCALattice();
 }
 
 Simulation.prototype.createCALattice = function () {
@@ -30,7 +29,6 @@ function Cell() {
 }
 
 Simulation.prototype.randomiseCALattice = function () {
-    //Todo add image loading
     for (var i = 0; i < this.width; i++) {
         for (var j = 0; j < this.height; j++) {
             this.cell[i][j].state = random(6);

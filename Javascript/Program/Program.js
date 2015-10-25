@@ -27,17 +27,6 @@ function Program(canvasName) {
         prog.simulation.setCALatticeFromImage(image);
         prog.display.resizeCanvas();
     }
-
-
-    //document.getElementById("imageToLoad").onchange = function () {
-        //prog.loadImage();
-    //};
-    
-
-
-    //document.getElementById("saveToFile").onclick = function () {
-        //prog.saveImage();
-   // };
 }
 // METHODS
 Program.prototype.update = function () {
@@ -48,7 +37,7 @@ Program.prototype.update = function () {
 };
 
 Program.prototype.saveImage = function () {
-    var schematicImage = this.simulation.getSchematicAsImage(); // todo!
+    var schematicImage = this.simulation.getSchematicAsImage();
     var imageData = schematicImage.toDataURL("image/png");
     var imageName = "schematic"; // todo add filename input in user interface
     this.createDownloadPrompt(imageName, imageData);
@@ -82,12 +71,12 @@ Program.prototype.createOpenPrompt = function () {
 Program.prototype.loadImage = function (fileInput) {
     var prog = this;
     var image = new Image();
-    var file = fileInput.files[0]; // todo use javascript instead of input element
+    var file = fileInput.files[0];
     var fileReader = new FileReader();
     fileReader.onload = function (event) {
         image.src = event.target.result;
         image.onload = function () {
-            prog.simulation.setCALatticeFromImage(image); //todo!
+            prog.simulation.setCALatticeFromImage(image);
             prog.display.resizeCanvas();
 
         }

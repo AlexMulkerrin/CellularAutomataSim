@@ -13,8 +13,8 @@ function Display(canvasName, simulation, control) {
     this.sqSize = 16;
 
     this.canvas = document.getElementById(canvasName);
-    this.canvas.width = window.innerWidth;//simulation.width * this.sqSize;
-    this.canvas.height = window.innerHeight;//simulation.height * this.sqSize;
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
     this.ctx = this.canvas.getContext("2d");
 
     this.icon = [];
@@ -37,8 +37,8 @@ Display.prototype.loadIcons = function () {
 }
 
 Display.prototype.resizeCanvas = function () {
-    this.canvas.width = window.innerWidth;//this.targetSim.width * this.sqSize;
-    this.canvas.height = window.innerHeight;//this.targetSim.height * this.sqSize;
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
     this.targetControl.repositionButtons();
     this.update();
 }
@@ -59,6 +59,8 @@ Display.prototype.clearCanvas = function () {
 }
 
 Display.prototype.drawCAGrid = function () {
+    this.sqSize = this.targetControl.view.pixelPerCell;
+
     for (var i = 0; i < this.targetSim.width; i++) {
         for (var j = 0; j < this.targetSim.height; j++) {
             this.ctx.fillStyle = this.chooseCAGridColour(i,j)
@@ -69,14 +71,14 @@ Display.prototype.drawCAGrid = function () {
 
 Display.prototype.chooseCAGridColour = function (x, y) {
     var result = "#eeeeee";
-    var left = Math.min(this.targetControl.mouse.latticeX, this.targetControl.oldX);
-    var top = Math.min(this.targetControl.mouse.latticeY, this.targetControl.oldY);
-    var right = Math.max(this.targetControl.mouse.latticeX, this.targetControl.oldX);
-    var bottom = Math.max(this.targetControl.mouse.latticeY, this.targetControl.oldY);
+    var left = Math.min(this.targetControl.mouse.latticeX, this.targetControl.mouse.oldLatticeX);
+    var top = Math.min(this.targetControl.mouse.latticeY, this.targetControl.mouse.oldLatticeY);
+    var right = Math.max(this.targetControl.mouse.latticeX, this.targetControl.mouse.oldLatticeX);
+    var bottom = Math.max(this.targetControl.mouse.latticeY, this.targetControl.mouse.oldLatticeY);
 
     if (this.targetControl.mouse.isPressed) {
         if (this.targetControl.mouse.buttonPressed === 1) {
-            if (x >= left && x <= right && y === this.targetControl.oldY) {
+            if (x >= left && x <= right && y === this.targetControl.mouse.oldLatticeY) {
                 result = "#eef5ff";
             }
             if (x === this.targetControl.mouse.latticeX && y >= top && y <= bottom) {
@@ -109,6 +111,11 @@ Display.prototype.drawCell = function (i, j) {
     this.ctx.fillStyle = selectCellColour(cell[i][j]);
     var x = i * this.sqSize;
     var y = j * this.sqSize;
+    var half = this.sqSize / 2;
+    var quarter = this.sqSize /4;
+    var eighth = this.sqSize / 8;
+    var sixteenth = this.sqSize / 16;
+
 
     //this.drawScaledImage(24, i, j);
     //this.drawScaledImage(25, i, j);
@@ -120,58 +127,58 @@ Display.prototype.drawCell = function (i, j) {
     // ugly hardcoded shapes
     switch(cell[i][j].state) {
         case 1:
-            this.drawRect(x + 8, y + 7, 7, 2);
-            this.drawRect(x + 13, y + 6, 1, 4);
-            this.drawRect(x + 12, y + 5, 1, 6);
+            this.drawRect(x + half, y + half - sixteenth, half, eighth);
+            this.drawRect(x + half+quarter+sixteenth*2, y + quarter + eighth, sixteenth, quarter);
+            this.drawRect(x + half + quarter + sixteenth, y + quarter + sixteenth, sixteenth, quarter + eighth);
             break;
         case 2:
-            this.drawRect(x + 7, y + 8, 2, 7);
-            this.drawRect(x + 6, y + 13, 4, 1);
-            this.drawRect(x + 5, y + 12, 6, 1);
+            this.drawRect(x + half - sixteenth, y + half, eighth, half);
+            this.drawRect(x + quarter + eighth, y + half + quarter + sixteenth*2, quarter, sixteenth);
+            this.drawRect(x + quarter + sixteenth, y + half + quarter + sixteenth, quarter + eighth, sixteenth);
             break;
         case 3:
-            this.drawRect(x, y + 7, 8, 2);
-            this.drawRect(x + 1, y + 6, 1, 4);
-            this.drawRect(x + 2, y + 5, 1, 6);
+            this.drawRect(x, y + half - sixteenth, half, eighth);
+            this.drawRect(x + sixteenth, y + quarter + eighth, sixteenth, quarter);
+            this.drawRect(x + eighth, y + quarter + sixteenth, sixteenth, quarter + eighth);
             break;
         case 4:
-            this.drawRect(x + 7, y, 2, 8);
-            this.drawRect(x + 6, y + 1, 4, 1);
-            this.drawRect(x + 5, y + 2, 6, 1);
+            this.drawRect(x + half - sixteenth, y, eighth, half);
+            this.drawRect(x + quarter + eighth, y + sixteenth, quarter, sixteenth);
+            this.drawRect(x + quarter + sixteenth, y + eighth, quarter + eighth, sixteenth);
             break;
         case 5:
-            this.drawRect(x + 7, y, 2, this.sqSize-1);
-            this.drawRect(x, y + 7, this.sqSize-1, 2);
+            this.drawRect(x + half - sixteenth, y, eighth, this.sqSize - 1);
+            this.drawRect(x, y + half - sixteenth, this.sqSize - 1, eighth);
 
-            this.drawRect(x + 13, y + 6, 1, 4);
-            this.drawRect(x + 12, y + 5, 1, 6);
+            this.drawRect(x + half + quarter + sixteenth, y + quarter + eighth, sixteenth, quarter);
+            this.drawRect(x + half + quarter, y + quarter + sixteenth, sixteenth, quarter + eighth);
 
-            this.drawRect(x + 6, y + 13, 4, 1);
-            this.drawRect(x + 5, y + 12, 6, 1);
+            this.drawRect(x + quarter + eighth, y + half + quarter + sixteenth, quarter, sixteenth);
+            this.drawRect(x + quarter + sixteenth, y + half + quarter, quarter + eighth, sixteenth);
 
-            this.drawRect(x + 1, y + 6, 1, 4);
-            this.drawRect(x + 2, y + 5, 1, 6);
+            this.drawRect(x + sixteenth, y + quarter + eighth, sixteenth, quarter);
+            this.drawRect(x + eighth, y + quarter + sixteenth, sixteenth, quarter + eighth);
 
-            this.drawRect(x + 6, y + 1, 4, 1);
-            this.drawRect(x + 5, y + 2, 6, 1);
+            this.drawRect(x + quarter + eighth, y + sixteenth, quarter, sixteenth);
+            this.drawRect(x + quarter + sixteenth, y + eighth, quarter + eighth, sixteenth);
             break;
     }
     // draw connections
     if (i > 0) {
         if (cell[i - 1][j].state === 1 || cell[i - 1][j].state === 5)
-            this.drawRect(x, y + 7, 8, 2);
+            this.drawRect(x + sixteenth, y + half - sixteenth, half - sixteenth, eighth);
     }
     if (i < this.targetSim.width - 1) {
         if (cell[i + 1][j].state === 3 || cell[i + 1][j].state === 5)
-            this.drawRect(x + 8, y + 7, 7, 2);
+            this.drawRect(x + half, y + half - sixteenth, half - sixteenth, eighth);
     }
     if (j > 0) {
         if (cell[i][j - 1].state === 2 || cell[i][j - 1].state === 5)
-            this.drawRect(x + 7, y, 2, 8);
+            this.drawRect(x + half - sixteenth, y + sixteenth, eighth, half - sixteenth);
     }
     if (j < this.targetSim.height - 1) {
         if (cell[i][j + 1].state === 4 || cell[i][j + 1].state === 5)
-            this.drawRect(x + 7, y + 8, 2, 7);
+            this.drawRect(x + half - sixteenth, y + half, eighth, half - sixteenth);
     }
 }
 
@@ -224,6 +231,8 @@ Display.prototype.drawButtons = function () {
     // drawing scrollbar sections goes here
 }
 
+
+
 Display.prototype.drawButton = function (button) {
     var nx, ny;
     if (button.isClicked) {
@@ -249,7 +258,15 @@ Display.prototype.drawInfo = function () {
     // top bar info
     this.ctx.fillStyle = "#000033";
     this.ctx.fillText("File", 5, 13);
-    this.ctx.fillText("*Example.png - Template Program Interface v0.1", 45, 13);
+    this.ctx.fillText("*Schematic.png - Cellular Automata Sim v0.2", 45, 13);
+
+    this.ctx.fillText(toolName[this.targetControl.currentTool], 243, 38);
+    if (this.targetSim.isRunning) {
+        this.ctx.fillText("running", 360, 38);
+    } else {
+        this.ctx.fillText("paused", 360, 38);
+    }
+    this.ctx.fillText("generation: "+this.targetSim.generation, 460, 38);
 
     // bottom bar info
     this.ctx.fillText(this.targetSim.width + " x " + this.targetSim.height, 29, c.height - 10);
@@ -258,7 +275,7 @@ Display.prototype.drawInfo = function () {
     this.ctx.fillText(this.targetControl.view.pixelPerCell + ":" + this.targetControl.view.cellPerPixel, c.width - 102, c.height - 10);
 
     // debug info
-    this.ctx.fillText(this.targetControl.select, 100, 100);
+    //this.ctx.fillText(this.targetControl.select, 100, 100);
 
 
     //this.ctx.fillStyle = "#000000";

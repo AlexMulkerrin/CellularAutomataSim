@@ -1,5 +1,5 @@
-﻿const toolType = { charge: 0, wire: 1, inverter: 2, splitter: 3, rotate: 4 }
-const toolName = ["charge", "wire", "inverter", "splitter", "rotate"];
+﻿const toolType = { charge: 0, wire: 1, inverter: 2, splitter: 3, rotate: 4 , remove:5}
+const toolName = ["charge", "wire", "inverter", "splitter", "rotate","remove"];
 const orientName = ["none","right", "down", "left", "up"];
 
 function Control(canvasName, simulation, program) {
@@ -15,15 +15,10 @@ function Control(canvasName, simulation, program) {
 
     this.select = "none";
 
-	this.oldX = -1;
-	this.oldY = -1;
-    this.hoverX = -1;
-    this.hoverY = -1;
     this.currentTool = toolType.wire;
     this.currentOrient = stateType.right;
 
     this.createButtons();
-    //this.createInterfaceEventHandlers();
     this.createKeyboardEventHandlers();
     this.createCanvasEventHandlers();
     
@@ -31,38 +26,6 @@ function Control(canvasName, simulation, program) {
 
 Control.prototype.linkDisplay = function(display) {
     this.targetDisplay=display;
-}
-
-Control.prototype.createInterfaceEventHandlers = function () {
-    var t = this;
-    document.getElementById("chargeButton").onclick = function () {
-        t.currentTool = toolType.charge;
-    };
-    document.getElementById("wireButton").onclick = function () {
-        t.currentTool = toolType.wire;
-    };
-    document.getElementById("inverterButton").onclick = function () {
-        t.currentTool = toolType.inverter;
-    };
-    document.getElementById("splitterButton").onclick = function () {
-        t.currentTool = toolType.splitter;
-    };
-    document.getElementById("rotateButton").onclick = function () {
-        t.currentTool = toolType.rotate;
-    };
-
-    document.getElementById("rightButton").onclick = function () {
-        t.currentOrient = 1;
-    };
-    document.getElementById("downButton").onclick = function () {
-        t.currentOrient = 2;
-    };
-    document.getElementById("leftButton").onclick = function () {
-        t.currentOrient = 3;
-    };
-    document.getElementById("upButton").onclick = function () {
-        t.currentOrient = 4;
-    };
 }
 
 Control.prototype.createKeyboardEventHandlers = function () {
@@ -77,21 +40,34 @@ Control.prototype.createKeyboardEventHandlers = function () {
 
         switch (keyCode) {
             case 49:    // 1 key
-                t.currentTool = toolType.wire;
+                t.mouse.newSelected = toolType.wire + 2;
+                t.selectTool();
                 break;
             case 50:    // 2 key
-                t.currentTool = toolType.charge;
+                t.mouse.newSelected = toolType.charge + 4;
+                t.selectTool();
                 break;
             case 51:    // 3 key
-                t.currentTool = toolType.inverter;
+                t.mouse.newSelected = toolType.inverter + 3;
+                t.selectTool();
                 break;
             case 52:    // 4 key
-                t.currentTool = toolType.splitter;
+                t.mouse.newSelected = toolType.splitter + 3;
+                t.selectTool();
                 break;
             case 53:    // 5 key
-                t.currentTool = toolType.rotate;
+                t.mouse.newSelected = toolType.rotate + 3;
+                t.selectTool();
                 //t.currentOrient++;
                 //if (t.currentOrient > 4) t.currentOrient = 1;
+                break;
+            case 54:    // 6 key
+                t.mouse.newSelected = toolType.remove + 3;
+                t.selectTool();
+                break;
+
+            case 80:    // p key
+                t.targetSim.togglePause();
                 break;
 
             case 65:
@@ -116,8 +92,6 @@ Control.prototype.createKeyboardEventHandlers = function () {
 
 Control.prototype.createCanvasEventHandlers = function () {
     var t = this;
-    this.targetCanvas.onmouseenter = function (event) { t.mouse.isOverCanvas = true; };
-    //this.targetCanvas.onmouseleave = function (event) { t.mouseExits(event); };
 
     this.targetCanvas.onmousemove = function (event) { t.mouseUpdateCoords(event); };
 
@@ -136,8 +110,6 @@ Control.prototype.mouseUpdateCoords = function (event) {
     var rect = this.targetCanvas.getBoundingClientRect();
     this.mouse.x = event.clientX - rect.left;
     this.mouse.y = event.clientY - rect.top;
-   // this.setHover();
-    // this.targetDisplay.update();
     this.checkHover();
 }
 
@@ -169,33 +141,32 @@ Control.prototype.checkHover = function () {
 }
 
 Control.prototype.checkLattice = function () {
+    this.mouse.isOverWorkspace = true;
     var cellSize = this.view.cellPerPixel/this.view.pixelPerCell;
     this.mouse.latticeX = Math.floor((this.mouse.x - this.view.x) * cellSize);
     this.mouse.latticeY = Math.floor((this.mouse.y - this.view.y) * cellSize);
-    if (this.mouse.latticeX < 0) this.mouse.latticeX = 0;
-    if (this.mouse.latticeX >= this.targetSim.width) this.mouse.latticeX = this.targetSim.width - 1;
-    if (this.mouse.latticeY < 0) this.mouse.latticeY = 0;
-    if (this.mouse.latticeY >= this.targetSim.height) this.mouse.latticeY = this.targetSim.height - 1;
-}
 
-Control.prototype.setHover = function () {
-    this.hoverX = Math.floor(this.mouse.x / this.targetDisplay.sqSize);
-    this.hoverY  = Math.floor(this.mouse.y / this.targetDisplay.sqSize);
+    if (this.mouse.latticeX < 0) {
+        this.mouse.isOverWorkspace = false;
+        this.mouse.latticeX = 0;
+    }
+    if (this.mouse.latticeX >= this.targetSim.width) {
+        this.mouse.isOverWorkspace = false;
+        this.mouse.latticeX = this.targetSim.width - 1;
+    }
+    if (this.mouse.latticeY < 0) {
+        this.mouse.isOverWorkspace = false;
+        this.mouse.latticeY = 0;
+    }
+    if (this.mouse.latticeY >= this.targetSim.height) {
+        this.mouse.isOverWorkspace = false;
+        this.mouse.latticeY = this.targetSim.height - 1;
+    }
 }
 
 Control.prototype.setOldHover = function () {
-    this.oldX = this.mouse.latticeX;
-    this.oldY = this.mouse.latticeY;
-}
-
-Control.prototype.mouseExits = function (event) {
-    this.mouse.isOverCanvas = false;
-    this.mouse.isPressed = false;
-    this.oldX = 0;
-    this.oldY = 0;
-    this.hoverX = -1;
-    this.hoverY = -1;
-    this.targetDisplay.update();
+    this.mouse.oldLatticeX = this.mouse.latticeX;
+    this.mouse.oldLatticeY = this.mouse.latticeY;
 }
 
 Control.prototype.mousePressed = function (event) {
@@ -215,20 +186,20 @@ Control.prototype.mouseReleased = function (event) {
     this.mouse.isReleased = false;
     this.checkHover();
 
-    //if (this.oldX >= 0 && this.oldY >= 0) {
-    //    if (this.mouse.buttonPressed === 1) {
-    //        if (this.oldX === this.hoverX && this.oldY === this.hoverY) {
-    //            this.targetSim.setCell(this.hoverX, this.hoverY, this.currentTool, this.currentOrient);
-    //        } else {
-    //            this.targetSim.setLine(this.hoverX, this.hoverY, this.oldX, this.oldY, this.currentTool, this.currentOrient);
-    //        }
-    //    } else if (this.mouse.buttonPressed === 3) {
-    //        this.targetSim.clearArea(this.hoverX, this.hoverY, this.oldX, this.oldY);
-    //    }
-    //}
-	//this.oldX = -1;
-	//this.oldY = -1;
-    //this.targetDisplay.update();
+    if (this.mouse.isOverWorkspace) {
+        if (this.mouse.buttonPressed === 1) {
+            if (this.mouse.oldLatticeX === this.mouse.latticeX && this.mouse.oldLatticeY === this.mouse.latticeY) {
+                this.targetSim.setCell(this.mouse.latticeX, this.mouse.latticeY, this.currentTool, this.currentOrient);
+            } else {
+                this.targetSim.setLine(this.mouse.latticeX, this.mouse.latticeY, this.mouse.oldLatticeX, this.mouse.oldLatticeY, this.currentTool, this.currentOrient);
+            }
+        } else if (this.mouse.buttonPressed === 3) {
+            this.targetSim.clearArea(this.mouse.latticeX, this.mouse.latticeY, this.mouse.oldLatticeX, this.mouse.oldLatticeY);
+        }
+    }
+	this.oldX = -1;
+	this.oldY = -1;
+    this.targetDisplay.update();
 }
 
 Control.prototype.mouseWheel = function (event) {
@@ -244,7 +215,7 @@ Control.prototype.mouseWheel = function (event) {
 function Mouse() {
     this.x = 0;
     this.y = 0;
-    this.isOverCanvas = false;
+    this.isOverWorkspace = false;
     this.isPressed = false;
     this.isReleased = false;
     this.buttonPressed = 0;
@@ -255,6 +226,8 @@ function Mouse() {
 
     this.latticeX = 0;
     this.latticeY = 0;
+    this.oldLatticeX = 0;
+    this.oldLatticeY = 0;
 }
 
 Control.prototype.fileMenu = function () {
@@ -275,6 +248,7 @@ Control.prototype.saveFile = function() {
 Control.prototype.selectTool = function() {
     var typeName = ["wire","charge","inverter","splitter","rotate","remove"];
     var type = this.mouse.newSelected - 3;
+    this.currentTool = toolType[typeName[type]];
     this.button[this.mouse.selected].isSelected = false;
     this.mouse.selected = this.mouse.newSelected;
     this.button[this.mouse.selected].isSelected = true;
@@ -286,10 +260,12 @@ Control.prototype.undo = function() {
 Control.prototype.redo = function() {
     this.select = "redo";
 }
-Control.prototype.run = function() {
+Control.prototype.run = function () {
+    this.targetSim.isRunning = true;
     this.select = "run";
 }
-Control.prototype.pause = function() {
+Control.prototype.pause = function () {
+    this.targetSim.isRunning = false;
     this.select = "pause";
 }
 Control.prototype.fullscreen = function() {
@@ -422,6 +398,8 @@ function View() {
     this.cellPerPixel = 1;
 }
 
+
+
 Control.prototype.createButtons = function () {
     var c = this.targetCanvas;
     var t = this;
@@ -437,8 +415,8 @@ Control.prototype.createButtons = function () {
     this.button[7] = new Button(180, 24, 22, 22, 7, "selectTool");
     this.button[8] = new Button(204, 24, 22, 22, 8, "selectTool");
 
-    this.button[9] = new Button(238, 24, 22, 22, 9, "undo");
-    this.button[10] = new Button(262, 24, 22, 22, 10, "redo");
+    this.button[9] = new Button(238, 24, 0, 0, null, "undo");
+    this.button[10] = new Button(262, 24, 0, 0, null, "redo");
 
     // simulation controls
     this.button[11] = new Button(296, 24, 22, 22, 11, "run");

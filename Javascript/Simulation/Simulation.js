@@ -2,6 +2,8 @@
 const nextDirec = [[0, 0], [1, 0], [0, 1], [-1, 0], [0, -1]];
 
 function Simulation(w, h) {
+    this.isRunning = true;
+    this.generation = 0;
     this.width = w;
     this.height = h;
     this.cell = [];
@@ -11,6 +13,7 @@ function Simulation(w, h) {
 }
 
 Simulation.prototype.createCALattice = function () {
+    this.generation = 0;
     for (var i = 0; i < this.width; i++) {
         this.cell[i] = [];
         for (var j = 0; j < this.height; j++) {
@@ -127,6 +130,9 @@ Simulation.prototype.setCell = function (x, y, type, orient) {
             cell.state = cell.state+1;
             if (cell.state > 4) cell.state = 1;
             break;
+        case toolType.remove:
+            cell.state = stateType.empty;
+            break;
 
     }
 }
@@ -198,6 +204,7 @@ Simulation.prototype.update = function () {
             this.cell[i][j].nextCharge = false;
         }
     }
+    this.generation++;
 }
 
 Simulation.prototype.setNextCharge = function (x, y, sourceState) {
@@ -229,4 +236,7 @@ Simulation.prototype.setNextCharge = function (x, y, sourceState) {
     }
 }
 
+Simulation.prototype.togglePause = function () {
+    this.isRunning = !this.isRunning
+};
 

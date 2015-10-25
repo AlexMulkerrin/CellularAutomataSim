@@ -21,7 +21,7 @@ function Program(canvasName) {
 
 
     var image = new Image();
-    image.src = "exampleSchematics/logicGates.png";
+    image.src = "exampleSchematics/4-bit counter.png";
     var prog = this;
     image.onload = function () {
         prog.simulation.setCALatticeFromImage(image);
@@ -41,7 +41,9 @@ function Program(canvasName) {
 }
 // METHODS
 Program.prototype.update = function () {
-    this.simulation.update();
+    if (this.simulation.isRunning) {
+        this.simulation.update();
+    }
     this.display.update();
 };
 

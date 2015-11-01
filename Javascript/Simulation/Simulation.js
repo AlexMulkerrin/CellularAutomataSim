@@ -1,5 +1,6 @@
-﻿const stateType = { empty: 0, right: 1, down: 2, left: 3, up: 4, splitter: 5 };
+﻿const stateType = { empty: 0, right: 1, down: 2, left: 3, up: 4, splitter: 5, crossing: 6 };
 const nextDirec = [[0, 0], [1, 0], [0, 1], [-1, 0], [0, -1]];
+const crossDirec = {none:0, vertical:1, horizontal:2, both:3}
 
 function Simulation(w, h) {
     this.isRunning = true;
@@ -26,6 +27,8 @@ function Cell() {
     this.isCharged = false;
     this.nextCharge = false;
     this.isInverter = false;
+    this.crossCharge = crossDirec.none;
+    this.nextCrossCharge = crossDirec.none;
 }
 
 Simulation.prototype.randomiseCALattice = function () {
@@ -81,8 +84,27 @@ Simulation.prototype.setCALatticeFromImage = function (image) {
                     this.cell[i][j].state = e;
                     if (this.cell[i][j].state > 4) {
                         this.cell[i][j].state = (e - 1) % 4 + 1;
-                        if (e > 16) {
-                            this.cell[i][j].state = 5;
+                        if (e > 18) {
+                            this.cell[i][j].state = stateType.crossing;
+                            switch (e) {
+                                case 19:
+                                    this.cell[i][j].crossCharge = crossDirec.none;
+                                    break;
+                                case 20:
+                                    this.cell[i][j].crossCharge = crossDirec.horizontal;
+                                    this.cell[i][j].isCharged = true;
+                                    break;
+                                case 21:
+                                    this.cell[i][j].crossCharge = crossDirec.vertical;
+                                    this.cell[i][j].isCharged = true;
+                                    break;
+                                case 22:
+                                    this.cell[i][j].crossCharge = crossDirec.both;
+                                    this.cell[i][j].isCharged = true;
+                                    break;
+                            }
+                        } else if (e > 16) {
+                            this.cell[i][j].state = stateType.splitter;
                             if (e === 18) {
                                 this.cell[i][j].isCharged = true;
                             }
@@ -109,12 +131,12 @@ Simulation.prototype.setCell = function (x, y, type, orient) {
             cell.isCharged = (!cell.isCharged);
             break;
         case toolType.wire:
-            /*if (cell.state > 0 && cell.state < 5) {
+            if (cell.state > 0 && cell.state < 5) {
                 cell.isInverter = false;
-                cell.state = stateType.splitter;
-            } else {*/
+                cell.state = stateType.crossing;
+            } else {
                 cell.state = orient;
-            //}
+            }
             break;
         case toolType.inverter:
             if (cell.state > 0 && cell.state < 5) {
@@ -129,10 +151,20 @@ Simulation.prototype.setCell = function (x, y, type, orient) {
             if (cell.state > 4) cell.state = 1;
             break;
         case toolType.remove:
-            cell.state = stateType.empty;
+            //cell.state = stateType.empty;
+            this.clearCell(cell);
             break;
 
     }
+}
+
+Simulation.prototype.clearCell = function (cell) {
+    this.state = stateType.empty;
+    this.isCharged = false;
+    this.nextCharge = false;
+    this.isInverter = false;
+    this.crossCharge = crossDirec.none;
+    this.nextCrossCharge = crossDirec.none;
 }
 
 Simulation.prototype.setLine = function (x, y, oldX, oldY, type, orient) {
@@ -157,7 +189,13 @@ Simulation.prototype.setLine = function (x, y, oldX, oldY, type, orient) {
         orientY = stateType.down;
     }
 
-
+    if (top !== bottom) {
+        if (orientX === stateType.right) { // don't overwrite cells
+            right--;
+        } else {
+            left++;
+        }
+    }
     for (var i = left; i <= right; i++) {
         this.setCell(i, oldY, type, orientX);
     }
@@ -198,8 +236,12 @@ Simulation.prototype.update = function () {
                 this.cell[i][j].isCharged = !(this.cell[i][j].nextCharge);
             } else {
                 this.cell[i][j].isCharged = this.cell[i][j].nextCharge;
+                this.cell[i][j].crossCharge = this.cell[i][j].nextCrossCharge;
+
             }
             this.cell[i][j].nextCharge = false;
+            this.cell[i][j].nextCrossCharge = crossDirec.none;
+            
         }
     }
     this.generation++;
@@ -211,23 +253,64 @@ Simulation.prototype.setNextCharge = function (x, y, sourceState) {
         for (var i = 1; i < 5; i++) {
             nx = x + nextDirec[i][0];
             ny = y + nextDirec[i][1];
-            if (nx >= 0 && nx < this.width && ny >= 0 && ny < this.height) {
-                if (this.cell[nx][ny].state !== stateType.empty) {
-                    opposite = ((i + 1) % 4) + 1; //disallow input into outputs
-                    if (this.cell[nx][ny].state !== opposite) {
-                        this.cell[nx][ny].nextCharge = true;
-                    }
-                }
-            }
+            this.checkNextCharge(nx, ny, i);
         }
+
+    } else if (sourceState === stateType.crossing) {
+        switch (this.cell[x][y].crossCharge){
+            case crossDirec.both:
+                for (var i = 1; i < 5; i++) {
+                    nx = x + nextDirec[i][0];
+                    ny = y + nextDirec[i][1];
+                    this.checkNextCharge(nx, ny, i);
+                }
+                break;
+
+            case crossDirec.horizontal:
+                nx = x + nextDirec[1][0];
+                ny = y + nextDirec[1][1];
+                this.checkNextCharge(nx, ny, 1);
+                nx = x + nextDirec[3][0];
+                ny = y + nextDirec[3][1];
+                this.checkNextCharge(nx, ny, 3);
+                break;
+
+            case crossDirec.vertical:
+                nx = x + nextDirec[2][0];
+                ny = y + nextDirec[2][1];
+                this.checkNextCharge(nx, ny, 2);
+                nx = x + nextDirec[4][0];
+                ny = y + nextDirec[4][1];
+                this.checkNextCharge(nx, ny, 4);
+                break;
+        }
+
     } else {
         nx = x + nextDirec[sourceState][0];
         ny = y + nextDirec[sourceState][1];
-        if (nx >= 0 && nx < this.width && ny >= 0 && ny < this.height) {
-            if (this.cell[nx][ny].state !== stateType.empty) {
-                opposite = ((sourceState + 1) % 4) + 1; //disallow input into outputs
-                if (this.cell[nx][ny].state !== opposite) {
-                    this.cell[nx][ny].nextCharge = true;
+        this.checkNextCharge(nx, ny, sourceState);
+    }
+}
+
+Simulation.prototype.checkNextCharge= function(x,y,sourceState) {
+    if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
+        if (this.cell[x][y].state !== stateType.empty) {
+            var opposite = ((sourceState + 1) % 4) + 1; //disallow input into outputs
+            if (this.cell[x][y].state !== opposite) {
+                this.cell[x][y].nextCharge = true;
+                if (this.cell[x][y].state === stateType.crossing) {
+                    if (this.cell[x][y].nextCrossCharge === crossDirec.none) {
+                        var direc = (sourceState % 2) + 1; // this some pretty kludgy modulo arthimetic
+                        this.cell[x][y].nextCrossCharge += direc;
+                    } else if (this.cell[x][y].nextCrossCharge === crossDirec.horizontal) {
+                        if (sourceState === stateType.down || sourceState === stateType.up) {
+                            this.cell[x][y].nextCrossCharge = crossDirec.both;
+                        }
+                    } else if (this.cell[x][y].nextCrossCharge === crossDirec.vertical) {
+                        if (sourceState === stateType.left || sourceState === stateType.right) {
+                            this.cell[x][y].nextCrossCharge = crossDirec.both;
+                        }
+                    }
                 }
             }
         }

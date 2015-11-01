@@ -3,8 +3,9 @@
 	"#0000cc", "#1111dd", "#2222ee", "#3333ff",	// wire
 	"#00cc00", "#11dd11", "#22ee22", "#33ff33",	// wire with signal
 	"#cc0000", "#dd1111", "#ee2222", "#ff3333",	// inverter
-	"#cccc00", "#dddd11", "#eeee22", "#ffff33",	// inverter with signal
-	"#aa00aa", "#ff00ff"                        // splitter
+	"#cccc00", "#dddd11", "#eeee22", "#ffff33", // inverter with signal
+	"#aa00aa", "#ff00ff",                       // splitter
+    "#aaaabb", "#aabbaa", "#bbaabb", "#bbbbaa"  // wire crossing
 ];
 
 function Display(canvasName, simulation, control) {
@@ -60,6 +61,12 @@ Display.prototype.clearCanvas = function () {
 
 Display.prototype.drawCAGrid = function () {
     this.sqSize = this.targetControl.view.pixelPerCell;
+    if (this.sqSize > 1) {
+        this.ctx.fillStyle = "#eeeeee";
+    } else {
+        this.ctx.fillStyle = "#ffffff";
+    }
+    this.drawRect(0, 0, this.targetSim.width * this.sqSize, this.targetSim.height *  this.sqSize);
 
     for (var i = 0; i < this.targetSim.width; i++) {
         for (var j = 0; j < this.targetSim.height; j++) {
@@ -70,7 +77,7 @@ Display.prototype.drawCAGrid = function () {
 }
 
 Display.prototype.chooseCAGridColour = function (x, y) {
-    var result = "#eeeeee";
+    var result = "#ffffff";
     var left = Math.min(this.targetControl.mouse.latticeX, this.targetControl.mouse.oldLatticeX);
     var top = Math.min(this.targetControl.mouse.latticeY, this.targetControl.mouse.oldLatticeY);
     var right = Math.max(this.targetControl.mouse.latticeX, this.targetControl.mouse.oldLatticeX);
@@ -162,23 +169,30 @@ Display.prototype.drawCell = function (i, j) {
             this.drawRect(x + quarter + eighth, y + sixteenth, quarter, sixteenth);
             this.drawRect(x + quarter + sixteenth, y + eighth, quarter + eighth, sixteenth);
             break;
+        case 6:
+            this.drawRect(x + half - sixteenth, y, eighth, quarter+eighth);
+            this.drawRect(x + half - sixteenth, y+half+eighth , eighth, quarter+eighth);
+            this.drawRect(x, y + half - sixteenth, this.sqSize - 1, eighth);
+            break;
     }
     // draw connections
-    if (i > 0) {
-        if (cell[i - 1][j].state === 1 || cell[i - 1][j].state === 5)
-            this.drawRect(x + sixteenth, y + half - sixteenth, half - sixteenth, eighth);
-    }
-    if (i < this.targetSim.width - 1) {
-        if (cell[i + 1][j].state === 3 || cell[i + 1][j].state === 5)
-            this.drawRect(x + half, y + half - sixteenth, half - sixteenth, eighth);
-    }
-    if (j > 0) {
-        if (cell[i][j - 1].state === 2 || cell[i][j - 1].state === 5)
-            this.drawRect(x + half - sixteenth, y + sixteenth, eighth, half - sixteenth);
-    }
-    if (j < this.targetSim.height - 1) {
-        if (cell[i][j + 1].state === 4 || cell[i][j + 1].state === 5)
-            this.drawRect(x + half - sixteenth, y + half, eighth, half - sixteenth);
+    if (cell[i][j].state < 5) {
+        if (i > 0) {
+            if (cell[i - 1][j].state === 1 || cell[i - 1][j].state === 5 || cell[i - 1][j].state === 6)
+                this.drawRect(x + sixteenth, y + half - sixteenth, half - sixteenth, eighth);
+        }
+        if (i < this.targetSim.width - 1) {
+            if (cell[i + 1][j].state === 3 || cell[i + 1][j].state === 5 || cell[i + 1][j].state === 6)
+                this.drawRect(x + half, y + half - sixteenth, half - sixteenth, eighth);
+        }
+        if (j > 0) {
+            if (cell[i][j - 1].state === 2 || cell[i][j - 1].state === 5 || cell[i][j - 1].state === 6)
+                this.drawRect(x + half - sixteenth, y + sixteenth, eighth, half - sixteenth);
+        }
+        if (j < this.targetSim.height - 1) {
+            if (cell[i][j + 1].state === 4 || cell[i][j + 1].state === 5 || cell[i][j + 1].state === 6)
+                this.drawRect(x + half - sixteenth, y + half, eighth, half - sixteenth);
+        }
     }
 }
 

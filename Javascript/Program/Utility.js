@@ -25,7 +25,22 @@ function toRGBString(red, green, blue) {
 }
 
 function selectCellColour(cell) {
-    if (cell.state === stateType.splitter) {
+    if (cell.state === stateType.crossing) {
+        switch (cell.crossCharge) { 
+            case crossDirec.none:
+                return cellColour[19];
+                break;
+            case crossDirec.horizontal:
+                return cellColour[20];
+                break;
+            case crossDirec.vertical:
+                return cellColour[21];
+                break;
+            case crossDirec.both:
+                return cellColour[22];
+                break;
+        }
+    } else if (cell.state === stateType.splitter) {
         if (cell.isCharged) {
             return cellColour[18];
         } else {

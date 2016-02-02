@@ -32,8 +32,9 @@ function Program(canvasName) {
 Program.prototype.update = function () {
     if (this.simulation.isRunning) {
         this.simulation.update();
+		this.display.update();
     }
-    this.display.update();
+    
 };
 
 Program.prototype.saveImage = function () {

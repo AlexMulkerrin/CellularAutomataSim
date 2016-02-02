@@ -54,7 +54,7 @@ Simulation.prototype.getSchematicAsImage =  function() {
         }
     }
     return tempCanvas;
-    
+
 }
 
 Simulation.prototype.setCALatticeFromImage = function (image) {
@@ -241,7 +241,7 @@ Simulation.prototype.update = function () {
             }
             this.cell[i][j].nextCharge = false;
             this.cell[i][j].nextCrossCharge = crossDirec.none;
-            
+
         }
     }
     this.generation++;
@@ -320,4 +320,3 @@ Simulation.prototype.checkNextCharge= function(x,y,sourceState) {
 Simulation.prototype.togglePause = function () {
     this.isRunning = !this.isRunning
 };
-
